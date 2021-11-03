@@ -20,4 +20,6 @@ RUN npm install --only=production
 COPY . .
 RUN npx prisma generate
 COPY --from=development /usr/src/app/dist ./dist
+
+EXPOSE 3000
 CMD ["npm", "run", "start:prod"]
