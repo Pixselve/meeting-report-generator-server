@@ -203,9 +203,12 @@ export class ReportsService {
     return result;
   }
 
-  async createOneReport(data: NewReportInput) {
+  async createOneReport({ date, ...data }: NewReportInput) {
     return this.prisma.report.create({
-      data,
+      data: {
+        ...data,
+        date: new Date(date),
+      },
     });
   }
 }

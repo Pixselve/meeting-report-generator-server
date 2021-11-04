@@ -1,5 +1,5 @@
 import { Grade, MeetingBy, Objective, PeoplePresent } from '@prisma/client';
-import { IsIn, IsNotEmpty } from 'class-validator';
+import { IsDate, IsDateString, IsIn, IsNotEmpty } from "class-validator";
 
 export class NewReportInput {
   @IsNotEmpty()
@@ -31,4 +31,7 @@ export class NewReportInput {
     each: true,
   })
   objectives: Objective[];
+
+  @IsDateString()
+  date: string;
 }
