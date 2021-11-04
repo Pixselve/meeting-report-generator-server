@@ -10,6 +10,11 @@ export type SchoolYear = {
   to: number;
 };
 
+type SchoolYearReports = {
+  schoolYear: SchoolYear;
+  reports: Report[];
+};
+
 @Injectable()
 export class ReportsService {
   constructor(private prisma: PrismaService) {}
@@ -173,7 +178,7 @@ export class ReportsService {
       where: { studentFullName },
     });
 
-    const yearToReport = new Map<SchoolYear, Report[]>();
+    const yearToReport = new Map<string, SchoolYearReports>();
 
     for (const report of reports) {
       let schoolYear: SchoolYear;
@@ -188,22 +193,56 @@ export class ReportsService {
           to: report.date.getFullYear() + 1,
         };
       }
-      yearToReport.set(schoolYear, [
-        ...(yearToReport.get(schoolYear) ?? []),
-        report,
-      ]);
+      let newSchoolYearReport: SchoolYearReports;
+
+      if (yearToReport.has(`${schoolYear.from}${schoolYear.to}`)) {
+        newSchoolYearReport = yearToReport.get(
+          `${schoolYear.from}${schoolYear.to}`,
+        );
+        newSchoolYearReport.reports.push(report);
+      } else {
+        newSchoolYearReport = {
+          reports: [report],
+          schoolYear,
+        };
+      }
+
+      yearToReport.set(
+        `${schoolYear.from}${schoolYear.to}`,
+        newSchoolYearReport,
+      );
     }
-    console.log(yearToReport);
+
     let result: { from: number; to: number; reports: Report[] }[] = [];
+
     for (const yearToReportElement of yearToReport) {
-      const [years, reports] = yearToReportElement;
-      result = [...result, { ...years, reports }];
+      const [
+        _,
+        {
+          reports,
+          schoolYear: { from, to },
+        },
+      ] = yearToReportElement;
+      result = [...result, { to, from, reports: reports }];
     }
+
+    console.log({ yearToReport });
 
     return result;
   }
 
   async createOneReport({ date, ...data }: NewReportInput) {
+    await this.prisma.teacher.upsert({
+      where: { fullName: data.teacherFullName },
+      create: { fullName: data.teacherFullName },
+      update: {},
+    });
+    await this.prisma.student.upsert({
+      where: { fullName: data.studentFullName },
+      create: { fullName: data.studentFullName },
+      update: {},
+    });
+
     return this.prisma.report.create({
       data: {
         ...data,

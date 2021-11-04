@@ -17,12 +17,14 @@ model User {
 
 model Student {
     id        Int      @default(autoincrement()) @id
-    fullName String
+    fullName String @unique
+    reports Report[]
 }
 
 model Teacher {
     id        Int      @default(autoincrement()) @id
-    fullName String
+    fullName String @unique
+    reports Report[]
 }
 
 model Report {
@@ -31,6 +33,8 @@ model Report {
     createdAt  DateTime   @default(now())
     teacherFullName String
     studentFullName String
+    teacher Teacher @relation(fields: [teacherFullName], references: [fullName])
+    student Student @relation(fields: [studentFullName], references: [fullName])
     details String
     importantInformation String
     grade Grade
