@@ -36,4 +36,6 @@ export class ReportsController {
   async createOneReport(@Body() newReportInput: NewReportInput) {
     return this.reports.createOneReport(newReportInput);
   }
+
+
 }
