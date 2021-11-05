@@ -9,4 +9,12 @@ export class StudentsService {
   async getAll(): Promise<Student[]> {
     return this.prisma.student.findMany();
   }
+
+  async deleteOne(fullName: string): Promise<Student> {
+    return this.prisma.student.delete({
+      where: {
+        fullName,
+      },
+    });
+  }
 }
